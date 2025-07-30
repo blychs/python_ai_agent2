@@ -10,7 +10,6 @@ FUNCTIONS = {
 
 
 def call_function(function_call_part: types.FunctionCall, verbose=False):
-    breakpoint()
     function = FUNCTIONS.get(function_call_part.name, None)
     function_name = function_call_part.name
     function_args = function_call_part.args

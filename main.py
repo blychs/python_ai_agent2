@@ -16,6 +16,9 @@ api_key = os.environ.get("GEMINI_API_KEY")
 def main():
     client = genai.Client(api_key=api_key)
     user_prompt = sys.argv[1]
+    verbose = (
+        False if "verbose" not in sys.argv[1] and "--verbose" not in sys.argv else True
+    )
     system_prompt = """
 You are a helpful AI coding agent.
 
@@ -27,6 +30,7 @@ When a user asks a question or makes a request, make a function call plan. You c
 - Write or overwrite files
 
 All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
+If the verbose flag is passed,
 """
     messages = [types.Content(role="user", parts=[types.Part(text=user_prompt)])]
     available_functions = types.Tool(
@@ -47,14 +51,14 @@ All paths you provide should be relative to the working directory. You do not ne
     function_calls = contents.function_calls
     if function_calls is not None:
         for function_call in function_calls:
-            function_call_result = call_function(function_call)
+            function_call_result = call_function(function_call, verbose=verbose)
             try:
                 response = function_call_result.parts[0].function_response.response
             except Exception as e:
                 raise Exception(
                     f"Error: no response from function {function_call}. Error {e}"
                 )
-            if function_call.args.get("verbose", False):
+            if verbose:
                 print(f"-> {response}")
     else:
         print(contents.text)

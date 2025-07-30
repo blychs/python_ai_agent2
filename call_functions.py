@@ -1,12 +1,25 @@
 from google.genai import types
-import functions as funcs
 
+from functions.get_files_info import get_files_info, schema_get_files_info
+from functions.get_file_content import get_file_content, schema_get_file_content
+from functions.run_python import run_python_file, schema_run_python_file
+from functions.write_file import write_file, schema_write_file
+WORKING_DIR = "./calculator"
 FUNCTIONS = {
-    "get_files_info": funcs.get_files_info,
-    "get_file_content": funcs.get_file_content,
-    "run_python_file": funcs.run_python_file,
-    "write_file": funcs.write_file,
+    "get_files_info": get_files_info,
+    "get_file_content": get_file_content,
+    "run_python_file": run_python_file,
+    "write_file": write_file,
 }
+
+available_functions = types.Tool(
+    function_declarations=[
+        schema_get_files_info,
+        schema_get_file_content,
+        schema_run_python_file,
+        schema_write_file,
+    ]
+)
 
 
 def call_function(function_call_part: types.FunctionCall, verbose=False):
@@ -28,7 +41,7 @@ def call_function(function_call_part: types.FunctionCall, verbose=False):
             ],
         )
     function_result = function(
-        **{**function_call_part.args, **{"working_directory": "./calculator"}}
+        **{**function_call_part.args, **{"working_directory": WORKING_DIR}}
     )
     return types.Content(
         role="tool",
